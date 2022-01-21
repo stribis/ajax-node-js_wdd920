@@ -21,10 +21,16 @@ function showGames (data) {
   uniqueNames.forEach(gameName => {
     //2. Create an <li>
     const li = document.createElement('li')
+    // Optional: create an option element
+    const option = document.createElement('option')
     //3. Add the current game name to the <li> as content
     li.innerText = gameName
+    // Optional: add content to option
+    option.setAttribute('value', gameName)
     //4. Append the current <li> in the <ul> in the HTML
     document.querySelector('.gameseries').appendChild(li)
+    // Optional: add option to datalist
+    document.querySelector('datalist').appendChild(option)
   })
 
   getAmiibos()
@@ -33,7 +39,6 @@ function showGames (data) {
 function getAmiibos () {
   // Getting Amiibos
   // Click event for the <li>
-
   const listItems = document.querySelectorAll('.gameseries > li')
   listItems.forEach( item => {
     item.addEventListener('click', async (e) => {
@@ -41,7 +46,49 @@ function getAmiibos () {
       const response = await fetch(`https://www.amiiboapi.com/api/amiibo/?gameseries=${item.innerText}`)
       const data = await response.json()
       console.log(data)
+      showAmiibos (data)
     })
   })
 
+  document.querySelector('.search').addEventListener('submit', async (e) => {
+    e.preventDefault()
+    console.log(document.querySelector('#search').value)
+    const response = await fetch(`https://www.amiiboapi.com/api/amiibo/?gameseries=${document.querySelector('#search').value}`)
+    const data = await response.json()
+    console.log(data)
+    showAmiibos (data)
+  })
 }
+
+function showAmiibos (data) {
+  document.querySelector('.amiibos').innerHTML = ''
+  document.querySelector('.amiibos').classList.toggle('show')
+  data.amiibo.forEach(amiibo => {
+
+    const div = document.createElement('div')
+
+    const template = `
+    <figure>
+      <div>
+        <img src="${amiibo.image}" alt="${amiibo.character}">
+      </div>
+      <figcaption>
+        <ul>
+          <li>Name: ${amiibo.character}</li>
+          <li>Game Series: ${amiibo.gameSeries}</li>
+          <li>Amiibo Series: ${amiibo.amiiboSeries}</li>
+          <li>Amiibo Type: ${amiibo.type}</li>
+        </ul>
+      </figcaption>
+    </figure>
+    `
+    div.innerHTML = template
+    document.querySelector('.amiibos').appendChild(div)
+
+  })
+}
+// Open and close amiibos window
+document.querySelector('.close').addEventListener('click', e => {
+  console.log('clicked')
+  document.querySelector('.amiibos').classList.toggle('show')
+})
